@@ -128,6 +128,28 @@ static int connect_reader(int fd) {
     return ERROR;
 }
 
+static int connect_writer(int fd) {
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        if (send_su_frame(fd, A_CSAR, SET) == ERROR) {
+            continue;
+        }
+
+        unsigned char *frame[SU_SIZE];
+        unsigned int frame_size = 0;
+        if ((frame_size = read_frame(fd, frame, SU_SIZE)) == ERROR) {
+            continue;
+        }
+
+        if (process_su_frame(frame, frame_size) != UA) {
+            continue;
+        }
+
+        return SUCCESS;
+    }
+
+    return ERROR;
+}
+
 int llopen(int port, int is_reader) {
     if (port >= 100) {
         return -1;
