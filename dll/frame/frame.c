@@ -102,15 +102,7 @@ unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
         return ERROR;
     }
 
-    if (frame[2] == SET) {
-        return SET;
-    } else if (frame[2] == DISC) {
-        return DISC;
-    } else if (frame[2] == UA) {
-        return UA;
-    }
-
-    return ERROR;
+    return frame[2];
 }
 
 unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned char* data, unsigned int* data_size) {
