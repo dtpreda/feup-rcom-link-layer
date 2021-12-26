@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <termios.h>
+#include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
 
 #include "dll.h"
+#include "frame/frame.h"
 #include "../common/common.h"
 
 #define BAUDRATE B38400
