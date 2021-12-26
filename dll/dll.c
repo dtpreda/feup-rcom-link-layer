@@ -106,6 +106,28 @@ static int send_i_frame(int fd, unsigned char address, unsigned char control, un
     return SUCCESS;
 }
 
+static int connect_reader(int fd) {
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        unsigned char *frame[SU_SIZE];
+        unsigned int frame_size = 0;
+        if ((frame_size = read_frame(fd, frame, SU_SIZE)) == ERROR) {
+            continue;
+        }
+
+        if (process_su_frame(frame, frame_size) != SET) {
+            continue;
+        }
+
+        if (send_su_frame(fd, A_CRAS, UA) == ERROR) {
+            continue;
+        }
+
+        return SUCCESS;
+    }
+
+    return ERROR;
+}
+
 int llopen(int port, int is_reader) {
     if (port >= 100) {
         return -1;
