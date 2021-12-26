@@ -157,8 +157,6 @@ void build_su_frame(unsigned char *frame, unsigned char address, unsigned char c
     unsigned char _to_bcc[2] = {address, control};
     frame[3] = xor(_to_bcc, 2);
     frame[4] = FLAG;
-
-    return 5;
 }
 
 int build_i_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned char *data, unsigned int data_size) {
