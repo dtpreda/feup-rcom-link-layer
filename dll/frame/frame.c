@@ -157,16 +157,16 @@ void build_su_frame(unsigned char *frame, unsigned char address, unsigned char c
     frame[4] = FLAG;
 }
 
-int build_i_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned char *data, unsigned int data_size) {
+unsigned int build_i_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned char *data, unsigned int data_size) {
     unsigned int _data_size = data_size;
     unsigned char dbcc = xor(data, data_size);
     if (byte_stuffing(data, &_data_size) == ERROR)
     {
-        return ERROR;
+        return 0;
     }
 
     if (_data_size > MAX_DATA_SIZE) {
-        return ERROR;
+        return 0;
     }
 
     frame[0] = FLAG;
