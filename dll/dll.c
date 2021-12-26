@@ -14,10 +14,13 @@
 #define BAUDRATE B38400
 #define TIMEOUT 5
 #define MAX_ATTEMPTS 5
+#define NEXT_SEQUENCE_NUMBER(n) (n + 1) % 2
 
 static int _is_reader;
 
 static struct termios oldtio;
+
+static unsigned int _sequence = 0;
 
 static int open_serial_port(char* port) {
     int fd;
@@ -182,8 +185,30 @@ int llopen(int port, int is_reader) {
     return fd;
 }
 
-int llwrite(int fd, unsigned char* buffer, unsigned int length) {
-    return 0;
+int llwrite(int fd, unsigned char* data, unsigned int data_size) {
+    if (data_size == 0) {
+        return SUCCESS;
+    }
+
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        if (send_i_frame(fd, A_CSAR, SEND_I(_sequence), data, data_size) == ERROR) {
+            continue;
+        }
+
+        unsigned char *frame[SU_SIZE];
+        unsigned frame_size = 0;
+
+        if ((frame_size = read_frame(fd, frame, frame_size)) == ERROR) {
+            continue;
+        }
+
+        unsigned char response = 0x00;
+        if ((response = process_su_frame(frame, frame_size)) == RR(NEXT_SEQUENCE_NUMBER(_sequence))) {
+            _sequence = NEXT_SEQUENCE_NUMBER(_sequence);
+            return data_size;
+        }
+    }
+    return ERROR;
 }
 
 int llread(int fd, unsigned char* buffer) {
