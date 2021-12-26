@@ -102,5 +102,13 @@ int llread(int fd, char* buffer) {
 }
 
 int llclose(int fd) {
-    return 0;
+    int ret = ERROR;
+    if (_is_reader) {
+        //ret = disconnect_writer(fd);
+        close_serial_port(fd);
+    } else {
+        //ret = disconnect_reader(fd);
+        close_serial_port(fd);
+    }
+    return ret;
 }
