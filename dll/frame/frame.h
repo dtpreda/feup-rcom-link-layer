@@ -1,6 +1,8 @@
 #ifndef FRAME
 #define FRAME
 
+#define FLAG (unsigned char) '\x7e'
+
 // Address Field bit sequences
 #define A_CSAR (unsigned char) '\x03'
 #define A_CRAS (unsigned char) '\x01'

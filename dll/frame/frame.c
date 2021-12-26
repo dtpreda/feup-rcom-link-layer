@@ -7,8 +7,6 @@
 #include "frame.h"
 #include "../../common/common.h"
 
-#define FLAG (unsigned char) '\x7e'
-
 #define ESCAPE_FIRST (unsigned char) '\x7d'
 #define ESCAPE_SECOND (unsigned char) '\x5e'
 #define ESCAPEX2_FIRST (unsigned char) '\x7d'
