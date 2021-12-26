@@ -180,5 +180,5 @@ int build_i_frame(unsigned char *frame, unsigned char address, unsigned char con
     frame[4 + _data_size] = dbcc;
     frame[4 + _data_size + 1] = FLAG;
 
-    return SUCCESS;
+    return _data_size;
 }
