@@ -59,6 +59,32 @@ static int byte_stuffing(unsigned char* data, unsigned int* size) {
     return SUCCESS;
 }
 
+static void byte_destuffing(unsigned char* data, unsigned int* size) {
+    unsigned int less = 0;
+
+    for (int i = 0; i < (*size) - 1; i++) {
+        if (data[i] == ESCAPE_FIRST && data[i+1] == ESCAPE_SECOND) {
+            data[i] = (unsigned char) FLAG;
+
+            for(int j = i + 1; j < (*size) - 1; j++) {
+                data[j] = data[j+1];
+            }
+
+            less++;
+        }
+        else if (data[i] == ESCAPEX2_FIRST && data[i+1] == ESCAPEX2_SECOND) {
+            data[i] = (unsigned char) ESCAPE_FIRST;
+
+            for(int j = i + 1; j < (*size) - 1; j++) {
+                data[j] = data[j+1];
+            }
+
+            less++;
+        }
+    }
+    
+    *size = (*size) - less * sizeof(unsigned char);
+
 void build_su_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned int is_s) {
     frame[0] = FLAG;
     frame[1] = address;
