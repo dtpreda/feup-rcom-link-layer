@@ -13,7 +13,9 @@
 #define RR(n) (unsigned char) ((n << 7) | '\x05')
 #define REJ(n) (unsigned char) ((n << 7) | '\x01')
 
-int build_su_frame(unsigned char* frame, unsigned char address, unsigned char control, unsigned int is_s);
+#define MAX_SIZE 2048
+
+void build_su_frame(unsigned char* frame, unsigned char address, unsigned char control, unsigned int is_s);
 
 int build_i_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned char *data, unsigned int data_size);
 
