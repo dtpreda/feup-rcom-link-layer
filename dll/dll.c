@@ -164,17 +164,13 @@ int llopen(int port, int is_reader) {
     }
     
     if (is_reader) {
-        /*
         if (connect_reader(fd) == ERROR) {
             return ERROR;
         }
-        */
     } else {
-        /*
         if (connect_writer(fd) == ERROR) {
             return ERROR;
         }
-        */
     }
 
     _is_reader = is_reader;
