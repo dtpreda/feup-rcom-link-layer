@@ -157,6 +157,56 @@ static int connect_writer(int fd) {
     return ERROR;
 }
 
+static int disconnect_reader(int fd) {
+    _sequence = 0;
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        unsigned char frame[SU_SIZE];
+        unsigned int frame_size = 0;
+        if ((frame_size = read_frame(fd, frame, SU_SIZE)) == ERROR) {
+            continue;
+        }
+
+        if (process_su_frame(frame, frame_size) != DISC) {
+            continue;
+        }
+
+        if (send_su_frame(fd, A_CRAS, DISC) == ERROR) {
+            continue;
+        }
+
+        return SUCCESS;
+    }
+
+    return ERROR;
+}
+
+static int disconnect_writer(int fd) {
+    _sequence = 0;
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        if (send_su_frame(fd, A_CSAR, DISC) == ERROR) {
+            continue;
+        }
+
+        unsigned char frame[SU_SIZE];
+        unsigned int frame_size = 0;
+        if ((frame_size = read_frame(fd,frame, frame_size)) == ERROR) {
+            continue;
+        }
+        
+        if (process_su_frame(frame, frame_size) != DISC) {
+            continue;
+        }
+
+        if (send_su_frame(fd, A_CRAS, UA) == ERROR) {
+            continue;
+        }
+
+        return SUCCESS;
+    }
+    
+    return ERROR;
+}
+
 int llopen(int port, int is_reader) {
     if (port >= 100) {
         return -1;
@@ -227,7 +277,7 @@ int llread(int fd, unsigned char* data) {
             }
             _sequence = NEXT_SEQUENCE_NUMBER(_sequence);
             return data_size;
-            
+
         } else if (control == SEND_I(NEXT_SEQUENCE_NUMBER(_sequence))) {
             if (send_su_frame(fd, A_CRAS, RR(NEXT_SEQUENCE_NUMBER(_sequence))) == ERROR) {
                 continue;
@@ -244,10 +294,10 @@ int llread(int fd, unsigned char* data) {
 int llclose(int fd) {
     int ret = ERROR;
     if (_is_reader) {
-        //ret = disconnect_writer(fd);
+        ret = disconnect_writer(fd);
         close_serial_port(fd);
     } else {
-        //ret = disconnect_reader(fd);
+        ret = disconnect_reader(fd);
         close_serial_port(fd);
     }
     return ret;
