@@ -115,6 +115,40 @@ unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
     return ERROR;
 }
 
+static unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned char* data, unsigned int* data_size) {
+    if (*size > MAX_SIZE || (*size) - 5 > MAX_DATA_SIZE) {
+        return ERROR;
+    }
+
+    if (frame[0] != FLAG || frame[(*size) - 1] != FLAG) {
+        return ERROR;
+    }
+
+    if (frame[1] != A_CSAR && frame[1] != A_CRAS){
+        return ERROR;
+    }
+
+    if (frame[2] != SEND_I(0) && frame[2] != SEND_I(1)) {
+        return ERROR;
+    }
+
+    unsigned char _to_bcc[2] = {frame[1], frame[2]};
+    if (frame[3] != xor(_to_bcc, 2)) {
+        return ERROR;
+    }
+
+    memcpy(data, ((void *)frame) + 4, (size_t) (size - 5));
+    byte_destuffing(data, data_size);
+
+    if (frame[(*size) - 2] != xor(data, *data_size)) {
+        return ERROR;
+    }
+
+    *size = (*data_size) + 5;
+
+    return SUCCESS;
+}
+
 void build_su_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned int is_s) {
     frame[0] = FLAG;
     frame[1] = address;
