@@ -86,20 +86,20 @@ static void byte_destuffing(unsigned char* data, unsigned int* size) {
 
 unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
     if (size != 5) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     if (frame[0] != FLAG || frame[4] != FLAG) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     if (frame[1] != A_CSAR && frame[1] != A_CRAS){
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     unsigned char _to_bcc[2] = {frame[1], frame[2]};
     if (frame[3] != xor(_to_bcc, 2)) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     return frame[2];
@@ -107,31 +107,31 @@ unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
 
 unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned char* data, unsigned int* data_size) {
     if (*size > MAX_SIZE || (*size) - 5 > MAX_DATA_SIZE) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     if (frame[0] != FLAG || frame[(*size) - 1] != FLAG) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     if (frame[1] != A_CSAR && frame[1] != A_CRAS){
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     if (frame[2] != SEND_I(0) && frame[2] != SEND_I(1)) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     unsigned char _to_bcc[2] = {frame[1], frame[2]};
     if (frame[3] != xor(_to_bcc, 2)) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     memcpy(data, ((void *)frame) + 4, (size_t) (size - 5));
     byte_destuffing(data, data_size);
 
     if (frame[(*size) - 2] != xor(data, *data_size)) {
-        return ERROR;
+        return U_CHAR_ERROR;
     }
 
     *size = (*data_size) + 5;
