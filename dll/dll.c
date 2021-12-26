@@ -93,11 +93,11 @@ int llopen(int port, int is_reader) {
     return fd;
 }
 
-int llwrite(int fd, char* buffer, int length) {
+int llwrite(int fd, unsigned char* buffer, unsigned int length) {
     return 0;
 }
 
-int llread(int fd, char* buffer) {
+int llread(int fd, unsigned char* buffer) {
     return 0;
 }
 
