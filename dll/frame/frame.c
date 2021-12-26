@@ -99,7 +99,7 @@ unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
         return ERROR;
     }
 
-    unsigned char _to_bcc[2] = [ frame[1], frame[2] ];
+    unsigned char _to_bcc[2] = {frame[1], frame[2]};
     if (frame[3] != xor(_to_bcc, 2)) {
         return ERROR;
     }
