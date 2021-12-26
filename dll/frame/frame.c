@@ -115,7 +115,7 @@ unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
     return ERROR;
 }
 
-static unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned char* data, unsigned int* data_size) {
+unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned char* data, unsigned int* data_size) {
     if (*size > MAX_SIZE || (*size) - 5 > MAX_DATA_SIZE) {
         return ERROR;
     }
@@ -146,7 +146,7 @@ static unsigned char process_i_frame(unsigned char* frame, unsigned int* size, u
 
     *size = (*data_size) + 5;
 
-    return SUCCESS;
+    return frame[2];
 }
 
 void build_su_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned int is_s) {
