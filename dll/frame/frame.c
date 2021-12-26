@@ -84,6 +84,7 @@ static void byte_destuffing(unsigned char* data, unsigned int* size) {
     }
     
     *size = (*size) - less * sizeof(unsigned char);
+}
 
 void build_su_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned int is_s) {
     frame[0] = FLAG;
