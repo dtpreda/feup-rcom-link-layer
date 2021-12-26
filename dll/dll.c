@@ -51,7 +51,7 @@ static int open_serial_port(char* port) {
     return fd;
 }
 
-int close_serial_port(int fd) {
+static int close_serial_port(int fd) {
     if (tcsetattr(fd,TCSANOW, &oldtio) == -1) {
         perror("tcsetattr");
         return ERROR;
