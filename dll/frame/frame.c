@@ -118,8 +118,8 @@ int build_i_frame(unsigned char *frame, unsigned char address, unsigned char con
     frame[3] = xor(_to_bcc, 2);
 
     memcpy(((void *)frame) + 4, data, (size_t)_data_size);
-    frame[4 + data_size] = dbcc;
-    frame[4 + data_size + 1] = FLAG;
+    frame[4 + _data_size] = dbcc;
+    frame[4 + _data_size + 1] = FLAG;
 
     return SUCCESS;
 }
