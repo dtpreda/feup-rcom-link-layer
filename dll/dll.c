@@ -97,7 +97,11 @@ static int send_su_frame(int fd, unsigned char address, unsigned char control) {
 
 static int send_i_frame(int fd, unsigned char address, unsigned char control, unsigned char* data, unsigned int data_size) {
     unsigned char *frame[MAX_SIZE];
-    unsigned int _data_size = build_i_frame(frame, address, control, data, data_size);
+    unsigned int _data_size = 0;
+
+    if ((_data_size = build_i_frame(frame, address, control, data, data_size)) == 0) {
+        return ERROR;
+    }
 
     if (write(fd, frame, _data_size) <= 0) {
         return ERROR;
