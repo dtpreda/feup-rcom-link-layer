@@ -22,7 +22,7 @@ unsigned char process_su_frame(unsigned char *frame, unsigned int size);
 
 unsigned char process_i_frame(unsigned char *frame, unsigned int *size, unsigned char *data, unsigned int *data_size);
 
-void build_su_frame(unsigned char* frame, unsigned char address, unsigned char control, unsigned int is_s);
+void build_su_frame(unsigned char* frame, unsigned char address, unsigned char control);
 
 int build_i_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned char *data, unsigned int data_size);
 

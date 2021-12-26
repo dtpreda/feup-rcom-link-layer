@@ -147,7 +147,7 @@ unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned
     return frame[2];
 }
 
-void build_su_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned int is_s) {
+void build_su_frame(unsigned char *frame, unsigned char address, unsigned char control) {
     frame[0] = FLAG;
     frame[1] = address;
     frame[2] = control;
