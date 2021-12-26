@@ -88,7 +88,7 @@ static int read_frame(int fd, unsigned char* frame, unsigned int max_size) {
 }
 
 static int send_su_frame(int fd, unsigned char address, unsigned char control) {
-    unsigned char *frame[SU_SIZE];
+    unsigned char frame[SU_SIZE];
     build_su_frame(frame, address, control);
 
     if (write(fd, frame, SU_SIZE) <= 0) {
@@ -99,7 +99,7 @@ static int send_su_frame(int fd, unsigned char address, unsigned char control) {
 }
 
 static int send_i_frame(int fd, unsigned char address, unsigned char control, unsigned char* data, unsigned int data_size) {
-    unsigned char *frame[MAX_SIZE];
+    unsigned char frame[MAX_SIZE];
     unsigned int _data_size = 0;
 
     if ((_data_size = build_i_frame(frame, address, control, data, data_size)) == 0) {
@@ -115,7 +115,7 @@ static int send_i_frame(int fd, unsigned char address, unsigned char control, un
 
 static int connect_reader(int fd) {
     for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-        unsigned char *frame[SU_SIZE];
+        unsigned char frame[SU_SIZE];
         unsigned int frame_size = 0;
         if ((frame_size = read_frame(fd, frame, SU_SIZE)) == ERROR) {
             continue;
@@ -141,7 +141,7 @@ static int connect_writer(int fd) {
             continue;
         }
 
-        unsigned char *frame[SU_SIZE];
+        unsigned char frame[SU_SIZE];
         unsigned int frame_size = 0;
         if ((frame_size = read_frame(fd, frame, SU_SIZE)) == ERROR) {
             continue;
@@ -245,7 +245,7 @@ int llwrite(int fd, unsigned char* data, unsigned int data_size) {
             continue;
         }
 
-        unsigned char *frame[SU_SIZE];
+        unsigned char frame[SU_SIZE];
         unsigned frame_size = 0;
 
         if ((frame_size = read_frame(fd, frame, SU_SIZE)) == ERROR) {
@@ -263,7 +263,7 @@ int llwrite(int fd, unsigned char* data, unsigned int data_size) {
 
 int llread(int fd, unsigned char* data) {
     for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-        unsigned char *frame[MAX_SIZE];
+        unsigned char frame[MAX_SIZE];
         unsigned int frame_size = 0;
         if ((frame_size = read_frame(fd, frame, MAX_SIZE)) == ERROR) {
             continue;
@@ -271,7 +271,7 @@ int llread(int fd, unsigned char* data) {
 
         unsigned char control;
         unsigned int data_size;
-        if ((control = process_i_frame(frame, frame_size, data, &data_size)) == SEND_I(_sequence)) {
+        if ((control = process_i_frame(frame, &frame_size, data, &data_size)) == SEND_I(_sequence)) {
             if (send_su_frame(fd, A_CRAS, RR(NEXT_SEQUENCE_NUMBER(_sequence))) == ERROR) {
                 continue;
             }
