@@ -63,7 +63,7 @@ static int close_serial_port(int fd) {
     return SUCCESS;
 }
 
-static read_frame(int fd, unsigned char* frame, unsigned int max_size) {
+static int read_frame(int fd, unsigned char* frame, unsigned int max_size) {
     unsigned int index = 0;
     unsigned int _read_smt = FALSE;
     unsigned char c = '\0';
