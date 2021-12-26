@@ -211,8 +211,34 @@ int llwrite(int fd, unsigned char* data, unsigned int data_size) {
     return ERROR;
 }
 
-int llread(int fd, unsigned char* buffer) {
-    return 0;
+int llread(int fd, unsigned char* data) {
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        unsigned char *frame[MAX_SIZE];
+        unsigned int frame_size = 0;
+        if ((frame_size = read_frame(fd, frame, MAX_SIZE)) == ERROR) {
+            continue;
+        }
+
+        unsigned char control;
+        unsigned int data_size;
+        if ((control = process_i_frame(frame, frame_size, data, &data_size)) == SEND_I(_sequence)) {
+            if (send_su_frame(fd, A_CRAS, RR(NEXT_SEQUENCE_NUMBER(_sequence))) == ERROR) {
+                continue;
+            }
+            _sequence = NEXT_SEQUENCE_NUMBER(_sequence);
+            return data_size;
+            
+        } else if (control == SEND_I(NEXT_SEQUENCE_NUMBER(_sequence))) {
+            if (send_su_frame(fd, A_CRAS, RR(NEXT_SEQUENCE_NUMBER(_sequence))) == ERROR) {
+                continue;
+            }
+            return 0;
+        }
+        else {
+            send_su_frame(fd, A_CRAS, REJ(NEXT_SEQUENCE_NUMBER(_sequence)));
+        }
+    }
+    return ERROR;
 }
 
 int llclose(int fd) {
