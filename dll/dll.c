@@ -84,6 +84,17 @@ static int read_frame(int fd, unsigned char* frame, unsigned int max_size) {
     return SUCCESS;
 }
 
+static int send_su_frame(int fd, unsigned char address, unsigned char control) {
+    unsigned char *frame[SU_SIZE];
+    build_su_frame(frame, address, control);
+
+    if (write(fd, frame, SU_SIZE) <= 0) {
+        return ERROR;
+    }
+
+    return SUCCESS;
+}
+
 int llopen(int port, int is_reader) {
     if (port >= 100) {
         return -1;
