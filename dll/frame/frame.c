@@ -86,6 +86,35 @@ static void byte_destuffing(unsigned char* data, unsigned int* size) {
     *size = (*size) - less * sizeof(unsigned char);
 }
 
+unsigned char process_su_frame(unsigned char* frame, unsigned int frame_size) {
+    if (frame_size != 5) {
+        return ERROR;
+    }
+
+    if (frame[0] != FLAG || frame[4] != FLAG) {
+        return ERROR;
+    }
+
+    if (frame[1] != A_CSAR && frame[1] != A_CRAS){
+        return ERROR;
+    }
+
+    unsigned char _to_bcc[2] = [ frame[1], frame[2] ];
+    if (frame[3] != xor(_to_bcc, 2)) {
+        return ERROR;
+    }
+
+    if (frame[2] == SET) {
+        return SET;
+    } else if (frame[2] == DISC) {
+        return DISC;
+    } else if (frame[2] == UA) {
+        return UA;
+    }
+
+    return ERROR;
+}
+
 void build_su_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned int is_s) {
     frame[0] = FLAG;
     frame[1] = address;
