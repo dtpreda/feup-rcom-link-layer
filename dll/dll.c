@@ -198,7 +198,7 @@ int llwrite(int fd, unsigned char* data, unsigned int data_size) {
         unsigned char *frame[SU_SIZE];
         unsigned frame_size = 0;
 
-        if ((frame_size = read_frame(fd, frame, frame_size)) == ERROR) {
+        if ((frame_size = read_frame(fd, frame, SU_SIZE)) == ERROR) {
             continue;
         }
 
