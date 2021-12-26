@@ -86,8 +86,8 @@ static void byte_destuffing(unsigned char* data, unsigned int* size) {
     *size = (*size) - less * sizeof(unsigned char);
 }
 
-unsigned char process_su_frame(unsigned char* frame, unsigned int frame_size) {
-    if (frame_size != 5) {
+unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
+    if (size != 5) {
         return ERROR;
     }
 
