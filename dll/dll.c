@@ -15,14 +15,14 @@
 
 static int _is_reader;
 
+static struct termios oldtio;
+
 static int open_serial_port(char* port) {
     int fd;
     if ((fd = open(port, O_RDWR | O_NOCTTY)) < 0) {
         perror("open");
         return ERROR;
     }
-
-    struct termios oldtio;
 
     if (tcgetattr(fd, &oldtio) == -1) {
         perror("tcgetattr");
@@ -49,6 +49,16 @@ static int open_serial_port(char* port) {
     }
 
     return fd;
+}
+
+int close_serial_port(int fd) {
+    if (tcsetattr(fd,TCSANOW, &oldtio) == -1) {
+        perror("tcsetattr");
+        return ERROR;
+    }
+    close(fd);
+
+    return SUCCESS;
 }
 
 int llopen(int port, int is_reader) {
