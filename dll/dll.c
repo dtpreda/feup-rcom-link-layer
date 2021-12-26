@@ -63,6 +63,27 @@ static int close_serial_port(int fd) {
     return SUCCESS;
 }
 
+static read_frame(int fd, unsigned char* frame, unsigned int max_size) {
+    unsigned int index = 0;
+    unsigned int _read_smt = FALSE;
+    unsigned char c = '\0';
+
+    while (index < max_size) {
+        if (read(fd, &c, 1) > 0) {
+            frame[index] = c;
+            index++;
+            if (_read_smt && c == FLAG)
+                break;
+            if (!_read_smt)
+                _read_smt = TRUE;
+        } else {
+            return ERROR;
+        }
+    }
+
+    return SUCCESS;
+}
+
 int llopen(int port, int is_reader) {
     if (port >= 100) {
         return -1;
