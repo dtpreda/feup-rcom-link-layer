@@ -16,6 +16,7 @@
 #define REJ(n) (unsigned char) ((n << 7) | '\x01')
 
 #define MAX_SIZE 2048
+#define SU_SIZE 5
 
 unsigned char process_su_frame(unsigned char *frame, unsigned int size);
 
