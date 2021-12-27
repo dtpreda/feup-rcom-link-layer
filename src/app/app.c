@@ -30,11 +30,11 @@ static struct {
 } input_flags = {0, 0, 0, 0};
 
 static unsigned int _file_size = 0;
-static unsigned int port = 0;
-static unsigned char file_name[APP_FILENAME_MAX] = {};
-static unsigned char new_file_name[APP_FILENAME_MAX] = {};
-static unsigned char path[APP_FILENAME_MAX] = {};
-static char mode = '\0';
+static unsigned int _port = 0;
+static unsigned char _file_name[APP_FILENAME_MAX] = {};
+static unsigned char _new_file_name[APP_FILENAME_MAX] = {};
+static unsigned char _path[APP_FILENAME_MAX] = {};
+static char _mode = '\0';
 
 static int get_control_packet(int fd, unsigned char control, unsigned char* file_name, unsigned int file_size) {
     unsigned char packet[MAX_PACKET_SIZE];
@@ -77,9 +77,9 @@ static int parse_input(int argc, char* argv[]) {
             }
             input_flags.file_name = 1;
 
-            mode = 'w';
+            _mode = 'w';
             
-            strncpy(file_name, argv[i], APP_FILENAME_MAX);
+            strncpy(_file_name, argv[i], APP_FILENAME_MAX);
             ism = FLAG;
 
         } else if (ism == PORT) {
@@ -87,8 +87,8 @@ static int parse_input(int argc, char* argv[]) {
                 return -1;
             }
             input_flags.port = 1;
-            port = strtol(argv[i], NULL, 10);
-            if (port == LONG_MIN || port == LONG_MAX) {
+            _port = strtol(argv[i], NULL, 10);
+            if (_port == LONG_MIN || _port == LONG_MAX) {
                 return -1;
             }
             
@@ -100,9 +100,9 @@ static int parse_input(int argc, char* argv[]) {
             }
             input_flags.path = 1;
 
-            mode = 'r';
+            _mode = 'r';
 
-            strncpy(path, argv[i], APP_FILENAME_MAX);
+            strncpy(_path, argv[i], APP_FILENAME_MAX);
             ism = FLAG;
 
         } else if (ism == NEW_FILENAME) {
@@ -111,7 +111,7 @@ static int parse_input(int argc, char* argv[]) {
             }
 
             input_flags.new_file_name = 1;
-            strncpy(new_file_name, argv[i], APP_FILENAME_MAX);
+            strncpy(_new_file_name, argv[i], APP_FILENAME_MAX);
             ism = FLAG;
         }
     }
@@ -185,15 +185,15 @@ int main(int argc, char* argv[]) {
     }
 
     int fd;
-    if (mode == 'w') {
-        if (access(file_name, F_OK) != 0) {
+    if (_mode == 'w') {
+        if (access(_file_name, F_OK) != 0) {
             printf("There is no such file\n");
             return ERROR;
         }
 
         printf("Establishing a connection...\n");
 
-        if ((fd = llopen(port, FALSE)) == ERROR) {
+        if ((fd = llopen(_port, FALSE)) == ERROR) {
             printf("Unable to establish a connection\n");
             return ERROR;
         }
@@ -201,14 +201,14 @@ int main(int argc, char* argv[]) {
         printf("Connection established!\n");
 
         unsigned char start_packet[MAX_PACKET_SIZE];
-        unsigned int size = build_control_packet(start_packet, START, file_name, _file_size);
+        unsigned int size = build_control_packet(start_packet, START, _file_name, _file_size);
 
         if (llwrite(fd, start_packet, size) == ERROR) {
             printf("Unable to send start control packet\n");
             return ERROR;
         }
 
-        if (send_file(fd, file_name,_file_size) != 0) {
+        if (send_file(fd, _file_name,_file_size) != 0) {
             printf("\nUnable to send file\n");
             return -1;
         }
@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
         printf("\nSuccesfully sent file\n");
 
        unsigned char end_packet[MAX_PACKET_SIZE];
-        unsigned int size = build_control_packet(end_packet, END, file_name, _file_size);
+        unsigned int size = build_control_packet(end_packet, END, _file_name, _file_size);
 
         if (llwrite(fd, end_packet, size) == ERROR) {
             printf("Unable to send end control packet\n");
@@ -232,22 +232,22 @@ int main(int argc, char* argv[]) {
 
         printf("Succesfully disconnected from the receiver\n");
     }
-    else if (mode == 'r') {
-        if ((fd = llopen(port, TRUE)) < 0) {
+    else if (_mode == 'r') {
+        if ((fd = llopen(_port, TRUE)) < 0) {
             printf("Unable to establish a connection\n");
             return -1;
         }
 
         printf("Succesfully established a connection with a transmitter\n");
 
-        if (get_control_packet(fd, START, file_name, _file_size) != 0) {
+        if (get_control_packet(fd, START, _file_name, _file_size) != 0) {
             printf("Unable to receive start control packet\n");
             return -1;
         }
 
         printf("Succesfully received start control packet\n");
 
-        unsigned char* file = (unsigned char*) malloc(sizeof(unsigned char) * start_info.file_size);
+        unsigned char* file = (unsigned char*) malloc(sizeof(unsigned char) * _file_size);
         int file_size = -1;
 
         /*
@@ -272,9 +272,9 @@ int main(int argc, char* argv[]) {
 
         char* fn;
         if (input_flags.new_file_name) {
-            fn = new_file_name;
+            fn = _new_file_name;
         } else {
-            fn = file_name;
+            fn = _file_name;
         }
 
     /*
