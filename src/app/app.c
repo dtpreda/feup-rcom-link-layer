@@ -155,7 +155,7 @@ int send_file(int fd, unsigned char* filename, unsigned int file_size) {
     unsigned int data_size = 0;
     fseek(fp, 0, SEEK_SET);
 
-    while(1) {
+    while(TRUE) {
         data_size = fread(data, sizeof(unsigned char), MAX_DATA_SIZE, fp);
 
         if(data_size > 0) {
@@ -177,6 +177,41 @@ int send_file(int fd, unsigned char* filename, unsigned int file_size) {
     }
 
     return SUCCESS;
+}
+
+int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
+    unsigned char packet[MAX_PACKET_SIZE];
+    unsigned int size = 0;
+    unsigned char data[MAX_DATA_SIZE];
+    unsigned int data_size = 0;
+    unsigned int cur_size = 0;
+
+    while (TRUE) {
+        if((data_size = llread(fd, packet)) > 0) {
+            print_progress((double) cur_size, (double) file_size, 1);
+            
+            if (process_data_packet(packet, size, data, &data_size) != _seq) {
+                return ERROR;
+            }
+
+            _seq = NEXT_SEQ_NUMBER(_seq);
+
+            memcpy(buffer + cur_size, data, data_size);
+            cur_size = cur_size + (unsigned int) data_size;
+        } else if (data_size == 0) {
+            continue;
+        }
+        else
+        {
+            return ERROR;
+        }
+    }
+
+    if (process_control_packet(packet, size, _end_file_name, _end_file_size) != 0) {
+        return ERROR;
+    }
+
+    return cur_size;
 }
 
 int main(int argc, char* argv[]) {
