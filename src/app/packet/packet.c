@@ -60,8 +60,17 @@ unsigned char process_control_packet(unsigned char *packet, unsigned int size, u
     return packet[0];
 }
 
-unsigned int build_data_packet(unsigned char *packet, unsigned char *data, unsigned int *data_size) {
-    return 0;
+unsigned int build_data_packet(unsigned char *packet, unsigned char sequence_number, unsigned char *data, unsigned int data_size) {
+    unsigned char l1 = (unsigned char) (data_size % 256);
+    unsigned char l2 = (unsigned char) (data_size / 256);
+
+    packet[0] = DATA;
+    packet[1] = sequence_number;
+    packet[2] = l2;
+    packet[3] = l1;
+
+    memcpy(((void*)packet) + DATA_HEADER_SIZE, data, (size_t)(data_size));
+    return data_size + DATA_HEADER_SIZE;
 }
 
 unsigned char process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size) {
