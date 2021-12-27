@@ -33,6 +33,21 @@ static char new_file_name[APP_FILENAME_MAX] = {};
 static char path[APP_FILENAME_MAX] = {};
 static char mode = '\0';
 
+static int get_control_packet(int fd, unsigned char control, unsigned char* file_name, unsigned int file_size) {
+    unsigned char packet[MAX_PACKET_SIZE];
+    unsigned int size = 0;
+    
+    if ((size = llread(fd, packet)) == ERROR) {
+        return ERROR;
+    }
+
+    if (process_control_packet(packet, size, file_name, file_size) != control) {
+        return ERROR;
+    }
+
+    return SUCCESS;
+}
+
 static int parse_input(int argc, char* argv[]) {
     enum input_sm ism = FLAG;
 
