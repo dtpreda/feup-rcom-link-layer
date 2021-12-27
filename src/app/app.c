@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include "../common/common.h"
 #include "../dll/dll.h"
@@ -147,6 +148,11 @@ int main(int argc, char* argv[]) {
 
     int fd;
     if (mode == 'w') {
+        if (access(file_name, F_OK) != 0) {
+            printf("There is no such file\n");
+            return ERROR;
+        }
+
         printf("Establishing a connection...\n");
 
         if ((fd = llopen(port, FALSE)) == ERROR) {
