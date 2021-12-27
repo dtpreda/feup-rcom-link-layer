@@ -39,12 +39,14 @@ unsigned int build_control_packet(unsigned char *packet, unsigned char control, 
     return CONTROL_HEADER_SIZE(2) + sizeof(unsigned int) + file_name_total;
 }
 
-unsigned char process_control_packet(unsigned char *packet, unsigned int size, unsigned char* file_name, unsigned int file_size) {
+unsigned char process_control_packet(unsigned char *packet, unsigned int size, unsigned char* file_name, unsigned int* file_size) {
     if (packet[1] != FILESIZE || packet[2] != 0x04) {
         return U_CHAR_ERROR;
     }
 
-    memcpy(&file_size, packet + 3, (size_t)4);
+    for (int i = 0; i < 4; i++) {
+        *file_size = (*file_size) | (unsigned int) (packet[3 + i] << 8*i); 
+    }
 
     int offset = 3 + sizeof(unsigned int);
 

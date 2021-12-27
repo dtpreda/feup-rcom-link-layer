@@ -38,7 +38,7 @@ static unsigned char _new_file_name[APP_FILENAME_MAX] = {};
 static unsigned char _path[APP_FILENAME_MAX] = {};
 static char _mode = '\0';
 
-static int get_control_packet(int fd, unsigned char control, unsigned char* file_name, unsigned int file_size) {
+static int get_control_packet(int fd, unsigned char control, unsigned char* file_name, unsigned int* file_size) {
     unsigned char packet[MAX_PACKET_SIZE];
     unsigned int size = 0;
     
@@ -165,15 +165,24 @@ static int send_file(int fd, unsigned char* file_name, unsigned int file_size) {
             data_size = build_data_packet(packet, _seq, data, data_size);
 
             if(llwrite(fd, packet, data_size) <= 0) {
+                fclose(fp);
                 return ERROR;
             }
 
             _seq = NEXT_SEQ_NUMBER(_seq);
         }
 
-        if(feof(fp) || ferror(fp)) { 
-            break ;
+        if(feof(fp)) { 
+            break;
+        } else if (ferror(fp)) {
+            perror("fread");
+            fclose(fp);
+            return ERROR;
         }
+    }
+
+    if (fclose(fp) != 0) {
+        return ERROR;
     }
 
     return SUCCESS;
@@ -187,10 +196,15 @@ static int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
     unsigned int cur_size = 0;
 
     while (TRUE) {
-        if((data_size = llread(fd, packet)) > 0) {
+        if((size = llread(fd, packet)) > 0) {
             print_progress((double) cur_size, (double) file_size, 1);
-            
+
+            if (packet[0] == END) {
+                break;
+            }
+
             if (process_data_packet(packet, size, data, &data_size) != _seq) {
+                printf("Error processing packet\n");
                 return ERROR;
             }
 
@@ -207,7 +221,7 @@ static int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
         }
     }
 
-    if (process_control_packet(packet, size, _end_file_name, _end_file_size) != END) {
+    if (process_control_packet(packet, size, _end_file_name, &_end_file_size) != END) {
         return ERROR;
     }
 
@@ -241,19 +255,26 @@ static int save_read_file(unsigned char* data, int data_size, unsigned char* fil
         return ERROR;
     }
 
-    return 0;
+    if (fclose(fp) != 0) {
+        return ERROR;
+    }
+
+    return SUCCESS;
 }
 
 static int get_file_size(unsigned char* file_name) {
     FILE* fp = fopen(file_name, "r");
     if (fp == NULL) {
-        return -1;
+        return ERROR;
     }
 
     fseek(fp, 0, SEEK_END); // seek to end of file
     int size = (int) ftell(fp); // get current file pointer
     fseek(fp, 0, SEEK_SET); // seek back to beginning of file
 
+    if (fclose(fp) != 0) {
+        return ERROR;
+    }
     return size;
 }
 
@@ -321,7 +342,7 @@ int main(int argc, char* argv[]) {
 
         printf("Succesfully established a connection with a transmitter\n");
 
-        if (get_control_packet(fd, START, _file_name, _file_size) != 0) {
+        if (get_control_packet(fd, START, _file_name, &_file_size) != 0) {
             printf("Unable to receive start control packet\n");
             return ERROR;
         }

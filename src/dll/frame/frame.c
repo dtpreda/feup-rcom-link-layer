@@ -28,9 +28,11 @@ static unsigned char xor (unsigned char *data, unsigned int size) {
 }
 
 static int byte_stuffing(unsigned char* data, unsigned int* size) {
-    for (unsigned int i = 0; i < (*size) - 1; i++) {
-        if (data[i] == (unsigned char)FLAG) {
-            if (*size == MAX_DATA_SIZE) {
+    for (unsigned int i = 1; i < (*size) - 1; i++) {
+        if (data[i] == (unsigned char)FLAG)
+        {
+            if (*size == MAX_DATA_SIZE)
+            {
                 return ERROR;
             }
             *size = (*size) + 1;
@@ -40,7 +42,7 @@ static int byte_stuffing(unsigned char* data, unsigned int* size) {
                 data[j + 1] = data[j];
             }
             data[i + 1] = ESCAPE_SECOND;
-        } 
+        }
         else if (data[i] == (unsigned char) ESCAPE_FIRST) {
             if (*size == MAX_DATA_SIZE) {
                 return ERROR;
@@ -106,6 +108,7 @@ unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
 }
 
 unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned char* data, unsigned int* data_size) {
+    byte_destuffing(frame, size);
     if (*size > MAX_SIZE || (*size) - 5 > MAX_DATA_SIZE) {
         return U_CHAR_ERROR;
     }
@@ -127,14 +130,14 @@ unsigned char process_i_frame(unsigned char* frame, unsigned int* size, unsigned
         return U_CHAR_ERROR;
     }
 
-    memcpy(data, ((void *)frame) + 4, (size_t) (size - 5));
-    byte_destuffing(data, data_size);
+    *data_size = (*size) - 6;
+    memcpy(data, ((void *)frame) + 4, (size_t)(*data_size));
 
     if (frame[(*size) - 2] != xor(data, *data_size)) {
         return U_CHAR_ERROR;
     }
 
-    *size = (*data_size) + 5;
+    *size = (*data_size) + 6;
 
     return frame[2];
 }
@@ -150,14 +153,7 @@ void build_su_frame(unsigned char *frame, unsigned char address, unsigned char c
 }
 
 unsigned int build_i_frame(unsigned char *frame, unsigned char address, unsigned char control, unsigned char *data, unsigned int data_size) {
-    unsigned int _data_size = data_size;
-    unsigned char dbcc = xor(data, data_size);
-    if (byte_stuffing(data, &_data_size) == ERROR)
-    {
-        return 0;
-    }
-
-    if (_data_size > MAX_DATA_SIZE) {
+     if (data_size > MAX_DATA_SIZE) {
         return 0;
     }
 
@@ -168,9 +164,22 @@ unsigned int build_i_frame(unsigned char *frame, unsigned char address, unsigned
     unsigned char _to_bcc[2] = {address, control};
     frame[3] = xor(_to_bcc, 2);
 
-    memcpy(((void *)frame) + 4, data, (size_t)_data_size);
-    frame[4 + _data_size] = dbcc;
-    frame[4 + _data_size + 1] = FLAG;
+    memcpy(((void *)frame) + 4, data, (size_t)data_size);
+    
+    unsigned char dbcc = xor(data, data_size);
+    frame[4 + data_size] = dbcc;
+    
+    frame[4 + data_size + 1] = FLAG;
 
-    return _data_size;
+    unsigned int size = data_size + 6;
+    if (byte_stuffing(frame, &size) == ERROR)
+    {
+        return 0;
+    }
+
+    if (size > MAX_SIZE) {
+        return 0;
+    }
+
+    return size;
 }
