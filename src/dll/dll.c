@@ -74,11 +74,11 @@ static int read_frame(int fd, unsigned char* frame, unsigned int max_size) {
     while (index < max_size) {
         if (read(fd, &c, 1) > 0) {
             frame[index] = c;
+            index++;
             if (_read_smt && c == FLAG)
                 break;
             if (!_read_smt)
                 _read_smt = TRUE;
-            index++;
         } else {
             return ERROR;
         }
