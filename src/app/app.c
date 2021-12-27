@@ -293,14 +293,10 @@ int main(int argc, char* argv[]) {
 
         printf("\nSuccesfully received file contents and end control packet\n");
 
-        /*
-        if (compare_file_info(&start_info, &end_info) != 0) {
+        if (strncmp(_file_name, _end_file_name, APP_FILENAME_MAX) != 0 || _file_size != _end_file_size) {
             printf("Start and end control packets do not match\n");
-            free(buffer);
-            return -1;
+            return ERROR;
         }
-
-        */
 
         printf("Control packets found to be matching\n");
 
