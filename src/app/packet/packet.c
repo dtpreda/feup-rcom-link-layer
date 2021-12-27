@@ -14,7 +14,7 @@
 
 unsigned int build_control_packet(unsigned char *packet, unsigned char control, unsigned char* file_name, unsigned int file_size) {
     if (file_name == NULL || file_size == 0) {
-        return ERROR;
+        return 0;
     }
 
     packet[0] = control;
@@ -39,14 +39,31 @@ unsigned int build_control_packet(unsigned char *packet, unsigned char control, 
     return CONTROL_HEADER_SIZE(2) + sizeof(unsigned int) + file_name_total;
 }
 
-unsigned int process_control_packet(unsigned char *packet, unsigned int size) {
-    return 0;
+unsigned char process_control_packet(unsigned char *packet, unsigned int size, unsigned char* file_name, unsigned int file_size) {
+    if (packet[1] != FILESIZE || packet[2] != 0x04) {
+        return U_CHAR_ERROR;
+    }
+
+    memcpy(file_size, packet + 3, (size_t)4);
+
+    int offset = 3 + sizeof(unsigned int);
+
+    if (packet[offset] != FILENAME) {
+        return U_CHAR_ERROR;
+    }
+
+    unsigned int file_name_size = packet[offset + 1];
+    for (unsigned int i = 0; i < file_name_size; i++) {
+        file_name[i] = packet[offset + 2 + i];
+    }
+
+    return packet[0];
 }
 
 unsigned int build_data_packet(unsigned char *packet, unsigned char *data, unsigned int *data_size) {
     return 0;
 }
 
-unsigned int process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size) {
+unsigned char process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size) {
     return 0;
 }

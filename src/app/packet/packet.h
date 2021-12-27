@@ -13,10 +13,10 @@
 
 unsigned int build_control_packet(unsigned char *packet, unsigned char control, unsigned char* file_name, unsigned int file_size);
 
-unsigned int process_control_packet(unsigned char *packet, unsigned int size);
+unsigned char process_control_packet(unsigned char *packet, unsigned int size, unsigned char* file_name, unsigned int file_size);
 
 unsigned int build_data_packet(unsigned char *packet, unsigned char *data, unsigned int *data_size);
 
-unsigned int process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size);
+unsigned char process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size);
 
 #endif /* PACKET */
