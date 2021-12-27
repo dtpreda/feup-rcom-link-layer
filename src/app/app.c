@@ -143,8 +143,8 @@ static void print_progress(double cur_size, double total_size, int is_reader) {
     fflush(stdout);
 }
 
-static int send_file(int fd, unsigned char* filename, unsigned int file_size) {
-    FILE* fp = fopen(filename, "r");
+static int send_file(int fd, unsigned char* file_name, unsigned int file_size) {
+    FILE* fp = fopen(file_name, "r");
     if (fp == NULL) {
         return -1;
     }
@@ -244,6 +244,19 @@ static int save_read_file(unsigned char* data, int data_size, unsigned char* fil
     return 0;
 }
 
+static int get_file_size(unsigned char* file_name) {
+    FILE* fp = fopen(file_name, "r");
+    if (fp == NULL) {
+        return -1;
+    }
+
+    fseek(fp, 0, SEEK_END); // seek to end of file
+    int size = (int) ftell(fp); // get current file pointer
+    fseek(fp, 0, SEEK_SET); // seek back to beginning of file
+
+    return size;
+}
+
 int main(int argc, char* argv[]) {
     if (parse_input(argc, argv) != 0) {
         printf("Correct usage: ./app -p <port number> -s <file to send> -r <where to store received file> [-n <new file name>]\n");
@@ -265,6 +278,8 @@ int main(int argc, char* argv[]) {
         }
 
         printf("Connection established!\n");
+
+        _file_size = get_file_size(_file_name);
 
         unsigned char start_packet[MAX_PACKET_SIZE];
         unsigned int size = build_control_packet(start_packet, START, _file_name, _file_size);
