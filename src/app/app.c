@@ -214,6 +214,36 @@ static int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
     return cur_size;
 }
 
+static int save_read_file(unsigned char* data, int data_size, unsigned char* file_name, unsigned char* path) {
+    if (file_name == NULL) {
+        return ERROR;
+    }
+
+    if (strlen(file_name) < 1) {
+        return ERROR;
+    }
+
+    char final_path[2 * APP_FILENAME_MAX + 2];
+    snprintf(final_path, APP_FILENAME_MAX + 2, "%s/%s", path, file_name);
+    
+    if (strlen(final_path) > APP_FILENAME_MAX) {
+        return ERROR;
+    }
+
+    FILE* fp = fopen(final_path, "w+");
+    if (fp == NULL) {
+        return ERROR;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    if (fwrite(data, sizeof(unsigned char), (size_t) data_size, fp) <= 0) {
+        perror("fwrite");
+        return ERROR;
+    }
+
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     if (parse_input(argc, argv) != 0) {
         printf("Correct usage: ./app -p <port number> -s <file to send> -r <where to store received file> [-n <new file name>]\n");
@@ -307,12 +337,11 @@ int main(int argc, char* argv[]) {
             fn = _file_name;
         }
 
-    /*
-        if (save_read_file(file, file_size, fn) != 0) {
+        if (save_read_file(file, file_size, fn, _path) != 0) {
             printf("Unable to save file locally\n");
-            return -1;
+            return ERROR;
         }
-*/
+
         printf("Received file saved successfully\n");
 
 
