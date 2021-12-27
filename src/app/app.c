@@ -33,7 +33,7 @@ static char new_file_name[APP_FILENAME_MAX] = {};
 static char path[APP_FILENAME_MAX] = {};
 static char mode = '\0';
 
-int parse_input(int argc, char* argv[]) {
+static int parse_input(int argc, char* argv[]) {
     enum input_sm ism = FLAG;
 
     for (int i = 1; i < argc; i++) {
@@ -103,6 +103,24 @@ int parse_input(int argc, char* argv[]) {
     }
 
     return 0;
+}
+
+static void print_progress(double cur_size, double total_size, int is_reader) {
+    double progress = (cur_size / total_size) * 100;
+    if (is_reader) {
+        printf("\rReceived %.0f bytes out of a total of %.0f bytes (%.0f%%)", cur_size, total_size, progress);
+    } else {
+        printf("\rSent %.0f bytes out of a total of %.0f bytes (%.0f%%)", cur_size, total_size, progress);
+    }
+    printf("|");
+    for (int i = 0; i < ((unsigned int) progress) / 4; i++) {
+        printf("\033[102m \033[0m");
+    }
+    for (int i = ((unsigned int) progress) / 4; i < 100 / 4; i++) {
+        printf(" ");
+    }
+    printf("|");
+    fflush(stdout);
 }
 
 int main(int argc, char* argv[]) {
