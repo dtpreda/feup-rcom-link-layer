@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "../common/common.h"
 #include "../dll/dll.h"
@@ -28,11 +29,11 @@ static struct {
     unsigned int new_file_name;
 } input_flags = {0, 0, 0, 0};
 
-static unsigned int file_size = 0;
+static unsigned int _file_size = 0;
 static unsigned int port = 0;
-static char file_name[APP_FILENAME_MAX] = {};
-static char new_file_name[APP_FILENAME_MAX] = {};
-static char path[APP_FILENAME_MAX] = {};
+static unsigned char file_name[APP_FILENAME_MAX] = {};
+static unsigned char new_file_name[APP_FILENAME_MAX] = {};
+static unsigned char path[APP_FILENAME_MAX] = {};
 static char mode = '\0';
 
 static int get_control_packet(int fd, unsigned char control, unsigned char* file_name, unsigned int file_size) {
@@ -55,16 +56,16 @@ static int parse_input(int argc, char* argv[]) {
 
     for (int i = 1; i < argc; i++) {
         if (ism == FLAG) {
-            if (strncmp(argv[i], "-s", 2) == 0) {
+            if (strncmp(argv[i], "-s", (size_t)2) == 0) {
                 ism = FILE_NAME;
                 continue;
-            } else if (strncmp(argv[i], "-p", 2) == 0) {
+            } else if (strncmp(argv[i], "-p", (size_t)2) == 0) {
                 ism = PORT;
                 continue;
-            } else if (strncmp(argv[i], "-r", 2) == 0) {
+            } else if (strncmp(argv[i], "-r", (size_t)2) == 0) {
                 ism = PATH;
                 continue;
-            } else if (strncmp(argv[i], "-n", 2) == 0) {
+            } else if (strncmp(argv[i], "-n", (size_t)2) == 0) {
                 ism = NEW_FILENAME;
                 continue;
             }
@@ -140,6 +141,43 @@ static void print_progress(double cur_size, double total_size, int is_reader) {
     fflush(stdout);
 }
 
+int send_file(int fd, unsigned char* filename, unsigned int file_size) {
+    FILE* fp = fopen(filename, "r");
+    if (fp == NULL) {
+        return -1;
+    }
+
+    unsigned char data[MAX_DATA_SIZE];
+    unsigned char packet[MAX_PACKET_SIZE];
+    unsigned int cur_size = 0;
+    unsigned int data_size = 0;
+    fseek(fp, 0, SEEK_SET);
+
+    while(1) {
+        data_size = fread(data, sizeof(unsigned char), MAX_DATA_SIZE, fp);
+
+        if(data_size > 0) {
+            cur_size = cur_size + data_size;
+            print_progress((double)cur_size, (double) file_size, 0);
+
+            data_size = build_data_packet(packet, _seq, data, data_size);
+
+            if(llwrite(fd, packet, data_size) <= 0) {
+                return ERROR;
+            }
+
+            _seq = NEXT_SEQ_NUMBER(_seq);
+        }
+
+        if(feof(fp) || ferror(fp)) { 
+            break ;
+        }
+    }
+
+    return SUCCESS;
+}
+
+
 int main(int argc, char* argv[]) {
     if (parse_input(argc, argv) != 0) {
         printf("Correct usage: ./app -p <port number> -s <file to send> -r <where to store received file> [-n <new file name>]\n");
@@ -163,7 +201,7 @@ int main(int argc, char* argv[]) {
         printf("Connection established!\n");
 
         unsigned char start_packet[MAX_PACKET_SIZE];
-        unsigned int size = build_control_packet(start_packet, START, file_name, file_size);
+        unsigned int size = build_control_packet(start_packet, START, file_name, _file_size);
 
         if (llwrite(fd, start_packet, size) == ERROR) {
             printf("Unable to send start control packet\n");
