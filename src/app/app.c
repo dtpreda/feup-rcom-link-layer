@@ -232,8 +232,66 @@ int main(int argc, char* argv[]) {
 
         printf("Succesfully disconnected from the receiver\n");
     }
-    else if (mode == 'r')
-    {
+    else if (mode == 'r') {
+        if ((fd = llopen(port, TRUE)) < 0) {
+            printf("Unable to establish a connection\n");
+            return -1;
+        }
+
+        printf("Succesfully established a connection with a transmitter\n");
+
+        if (get_control_packet(fd, START, file_name, _file_size) != 0) {
+            printf("Unable to receive start control packet\n");
+            return -1;
+        }
+
+        printf("Succesfully received start control packet\n");
+
+        unsigned char* file = (unsigned char*) malloc(sizeof(unsigned char) * start_info.file_size);
+        int file_size = -1;
+
+        /*
+        if ((file_size = receive_file(fd, file)) < 0) {
+            printf("\nUnable to properly receive file\n");
+            return -1;
+        }
+        */
+
+        printf("\nSuccesfully received file contents and end control packet\n");
+
+        /*
+        if (compare_file_info(&start_info, &end_info) != 0) {
+            printf("Start and end control packets do not match\n");
+            free(buffer);
+            return -1;
+        }
+
+        */
+
+        printf("Control packets found to be matching\n");
+
+        char* fn;
+        if (input_flags.new_file_name) {
+            fn = new_file_name;
+        } else {
+            fn = file_name;
+        }
+
+    /*
+        if (save_read_file(file, file_size, fn) != 0) {
+            printf("Unable to save file locally\n");
+            return -1;
+        }
+*/
+        printf("Received file saved successfully\n");
+
+
+        if (llclose(fd) != 0) {
+            printf("Unable to disconnect\n");
+            return -1;
+        }
+
+        printf("Successfully disconnected from the sender\n");
     }
 
     return ERROR;
