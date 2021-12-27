@@ -38,11 +38,11 @@ static unsigned char _new_file_name[APP_FILENAME_MAX] = {};
 static unsigned char _path[APP_FILENAME_MAX] = {};
 static char _mode = '\0';
 
-static int get_control_packet(int fd, unsigned char control, unsigned char* file_name, unsigned int* file_size) {
+static int get_control_packet(unsigned char control, unsigned char* file_name, unsigned int* file_size) {
     unsigned char packet[MAX_PACKET_SIZE];
     unsigned int size = 0;
     
-    if ((size = llread(fd, packet)) == ERROR) {
+    if ((size = llread(packet)) == ERROR) {
         return ERROR;
     }
 
@@ -143,7 +143,7 @@ static void print_progress(double cur_size, double total_size, int is_reader) {
     fflush(stdout);
 }
 
-static int send_file(int fd, unsigned char* file_name, unsigned int file_size) {
+static int send_file(unsigned char* file_name, unsigned int file_size) {
     FILE* fp = fopen(file_name, "r");
     if (fp == NULL) {
         return -1;
@@ -164,7 +164,7 @@ static int send_file(int fd, unsigned char* file_name, unsigned int file_size) {
 
             data_size = build_data_packet(packet, _seq, data, data_size);
 
-            if(llwrite(fd, packet, data_size) <= 0) {
+            if(llwrite(packet, data_size) <= 0) {
                 fclose(fp);
                 return ERROR;
             }
@@ -188,7 +188,7 @@ static int send_file(int fd, unsigned char* file_name, unsigned int file_size) {
     return SUCCESS;
 }
 
-static int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
+static int receive_file(unsigned char* buffer, unsigned int file_size) {
     unsigned char packet[MAX_PACKET_SIZE];
     unsigned int size = 0;
     unsigned char data[MAX_DATA_SIZE];
@@ -196,7 +196,7 @@ static int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
     unsigned int cur_size = 0;
 
     while (TRUE) {
-        if((size = llread(fd, packet)) > 0) {
+        if((size = llread(packet)) > 0) {
             print_progress((double) cur_size, (double) file_size, 1);
 
             if (packet[0] == END) {
@@ -284,7 +284,6 @@ int main(int argc, char* argv[]) {
         return ERROR;
     }
 
-    int fd;
     if (_mode == 'w') {
         if (access(_file_name, F_OK) != 0) {
             printf("There is no such file\n");
@@ -293,7 +292,7 @@ int main(int argc, char* argv[]) {
 
         printf("Establishing a connection...\n");
 
-        if ((fd = llopen(_port, FALSE)) == ERROR) {
+        if (llopen(_port, FALSE) == ERROR) {
             printf("Unable to establish a connection\n");
             return ERROR;
         }
@@ -305,12 +304,12 @@ int main(int argc, char* argv[]) {
         unsigned char start_packet[MAX_PACKET_SIZE];
         unsigned int size = build_control_packet(start_packet, START, _file_name, _file_size);
 
-        if (llwrite(fd, start_packet, size) == ERROR) {
+        if (llwrite(start_packet, size) == ERROR) {
             printf("Unable to send start control packet\n");
             return ERROR;
         }
 
-        if (send_file(fd, _file_name,_file_size) != 0) {
+        if (send_file(_file_name,_file_size) != 0) {
             printf("\nUnable to send file\n");
             return -1;
         }
@@ -320,14 +319,14 @@ int main(int argc, char* argv[]) {
         unsigned char end_packet[MAX_PACKET_SIZE];
         size = build_control_packet(end_packet, END, _file_name, _file_size);
 
-        if (llwrite(fd, end_packet, size) == ERROR) {
+        if (llwrite(end_packet, size) == ERROR) {
             printf("Unable to send end control packet\n");
             return ERROR;
         }
 
         printf("Succesfully sent end control packet\n");
 
-        if (llclose(fd) != 0) {
+        if (llclose() != 0) {
             printf("Unable to disconnect\n");
             return -1;
         }
@@ -335,14 +334,14 @@ int main(int argc, char* argv[]) {
         printf("Succesfully disconnected from the receiver\n");
     }
     else if (_mode == 'r') {
-        if ((fd = llopen(_port, TRUE)) < 0) {
+        if (llopen(_port, TRUE) < 0) {
             printf("Unable to establish a connection\n");
             return ERROR;
         }
 
         printf("Succesfully established a connection with a transmitter\n");
 
-        if (get_control_packet(fd, START, _file_name, &_file_size) != 0) {
+        if (get_control_packet(START, _file_name, &_file_size) != 0) {
             printf("Unable to receive start control packet\n");
             return ERROR;
         }
@@ -352,7 +351,7 @@ int main(int argc, char* argv[]) {
         unsigned char* file = (unsigned char*) malloc(sizeof(unsigned char) * _file_size);
         int file_size = -1;
 
-        if ((file_size = receive_file(fd, file, _file_size)) < 0) {
+        if ((file_size = receive_file(file, _file_size)) < 0) {
             printf("\nUnable to properly receive file\n");
             return ERROR;
         }
@@ -381,7 +380,7 @@ int main(int argc, char* argv[]) {
         printf("Received file saved successfully\n");
 
 
-        if (llclose(fd) != 0) {
+        if (llclose() != 0) {
             printf("Unable to disconnect\n");
             return ERROR;
         }

@@ -103,7 +103,7 @@ unsigned char process_su_frame(unsigned char* frame, unsigned int size) {
     if (frame[3] != xor(_to_bcc, 2)) {
         return U_CHAR_ERROR;
     }
-
+    
     return frame[2];
 }
 

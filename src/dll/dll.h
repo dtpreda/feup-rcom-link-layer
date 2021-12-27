@@ -3,10 +3,10 @@
 
 int llopen(int port, int is_reader);
 
-int llwrite(int fd, unsigned char* data, unsigned int data_size);
+int llwrite(unsigned char* data, unsigned int data_size);
 
-int llread(int fd, unsigned char* data);
+int llread(unsigned char* data);
 
-int llclose(int fd);
+int llclose();
 
 #endif /* DLL */
