@@ -27,11 +27,13 @@ static struct {
     unsigned int port;
     unsigned int path;
     unsigned int new_file_name;
-} input_flags = {0, 0, 0, 0};
+} _input_flags = {0, 0, 0, 0};
 
 static unsigned int _file_size = 0;
+static unsigned int _end_file_size = 0;
 static unsigned int _port = 0;
 static unsigned char _file_name[APP_FILENAME_MAX] = {};
+static unsigned char _end_file_name[APP_FILENAME_MAX] = {};
 static unsigned char _new_file_name[APP_FILENAME_MAX] = {};
 static unsigned char _path[APP_FILENAME_MAX] = {};
 static char _mode = '\0';
@@ -72,10 +74,10 @@ static int parse_input(int argc, char* argv[]) {
             return -1;
 
         } else if (ism == FILE_NAME) {
-            if (input_flags.path || input_flags.file_name) {
+            if (_input_flags.path || _input_flags.file_name) {
                 return -1;
             }
-            input_flags.file_name = 1;
+            _input_flags.file_name = 1;
 
             _mode = 'w';
             
@@ -83,10 +85,10 @@ static int parse_input(int argc, char* argv[]) {
             ism = FLAG;
 
         } else if (ism == PORT) {
-            if (input_flags.port) {
+            if (_input_flags.port) {
                 return -1;
             }
-            input_flags.port = 1;
+            _input_flags.port = 1;
             _port = strtol(argv[i], NULL, 10);
             if (_port == LONG_MIN || _port == LONG_MAX) {
                 return -1;
@@ -95,10 +97,10 @@ static int parse_input(int argc, char* argv[]) {
             ism = FLAG;
 
         } else if (ism == PATH) {
-            if (input_flags.file_name || input_flags.path) {
+            if (_input_flags.file_name || _input_flags.path) {
                 return -1;
             }
-            input_flags.path = 1;
+            _input_flags.path = 1;
 
             _mode = 'r';
 
@@ -106,17 +108,17 @@ static int parse_input(int argc, char* argv[]) {
             ism = FLAG;
 
         } else if (ism == NEW_FILENAME) {
-            if (input_flags.new_file_name) {
+            if (_input_flags.new_file_name) {
                 return -1;
             }
 
-            input_flags.new_file_name = 1;
+            _input_flags.new_file_name = 1;
             strncpy(_new_file_name, argv[i], APP_FILENAME_MAX);
             ism = FLAG;
         }
     }
 
-    if (input_flags.port == 0 || (input_flags.file_name == 0 && input_flags.path == 0)) {
+    if (_input_flags.port == 0 || (_input_flags.file_name == 0 && _input_flags.path == 0)) {
         return -1;
     }
 
@@ -176,7 +178,6 @@ int send_file(int fd, unsigned char* filename, unsigned int file_size) {
 
     return SUCCESS;
 }
-
 
 int main(int argc, char* argv[]) {
     if (parse_input(argc, argv) != 0) {
@@ -271,7 +272,7 @@ int main(int argc, char* argv[]) {
         printf("Control packets found to be matching\n");
 
         char* fn;
-        if (input_flags.new_file_name) {
+        if (_input_flags.new_file_name) {
             fn = _new_file_name;
         } else {
             fn = _file_name;
