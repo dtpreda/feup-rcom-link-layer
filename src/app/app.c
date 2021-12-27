@@ -271,14 +271,14 @@ int main(int argc, char* argv[]) {
     else if (_mode == 'r') {
         if ((fd = llopen(_port, TRUE)) < 0) {
             printf("Unable to establish a connection\n");
-            return -1;
+            return ERROR;
         }
 
         printf("Succesfully established a connection with a transmitter\n");
 
         if (get_control_packet(fd, START, _file_name, _file_size) != 0) {
             printf("Unable to receive start control packet\n");
-            return -1;
+            return ERROR;
         }
 
         printf("Succesfully received start control packet\n");
@@ -286,12 +286,10 @@ int main(int argc, char* argv[]) {
         unsigned char* file = (unsigned char*) malloc(sizeof(unsigned char) * _file_size);
         int file_size = -1;
 
-        /*
-        if ((file_size = receive_file(fd, file)) < 0) {
+        if ((file_size = receive_file(fd, file, _file_size)) < 0) {
             printf("\nUnable to properly receive file\n");
-            return -1;
+            return ERROR;
         }
-        */
 
         printf("\nSuccesfully received file contents and end control packet\n");
 
@@ -324,7 +322,7 @@ int main(int argc, char* argv[]) {
 
         if (llclose(fd) != 0) {
             printf("Unable to disconnect\n");
-            return -1;
+            return ERROR;
         }
 
         printf("Successfully disconnected from the sender\n");
