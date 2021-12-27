@@ -60,7 +60,7 @@ static int byte_stuffing(unsigned char* data, unsigned int* size) {
 static void byte_destuffing(unsigned char* data, unsigned int* size) {
     unsigned int less = 0;
 
-    for (int i = 1; i < (*size) - 1; i++) {
+    for (int i = 0; i < (*size) - 1; i++) {
         if (data[i] == ESCAPE_FIRST && data[i+1] == ESCAPE_SECOND) {
             data[i] = (unsigned char) FLAG;
 
