@@ -207,6 +207,30 @@ int main(int argc, char* argv[]) {
             printf("Unable to send start control packet\n");
             return ERROR;
         }
+
+        if (send_file(fd, file_name,_file_size) != 0) {
+            printf("\nUnable to send file\n");
+            return -1;
+        }
+
+        printf("\nSuccesfully sent file\n");
+
+       unsigned char end_packet[MAX_PACKET_SIZE];
+        unsigned int size = build_control_packet(end_packet, END, file_name, _file_size);
+
+        if (llwrite(fd, end_packet, size) == ERROR) {
+            printf("Unable to send end control packet\n");
+            return ERROR;
+        }
+
+        printf("Succesfully sent end control packet\n");
+
+        if (llclose(fd) != 0) {
+            printf("Unable to disconnect\n");
+            return -1;
+        }
+
+        printf("Succesfully disconnected from the receiver\n");
     }
     else if (mode == 'r')
     {
