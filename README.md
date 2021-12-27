@@ -1,5 +1,5 @@
 # Data Link Layer Protocol and File Transfer Application
-As proposed by the 2021/2022 edition of the RC course @FEUP, this project implements communication protocol for the `RS-232` device driver and a file transfer application which acts upon the same device.
+As proposed by the 2021/2022 edition of the RC course @FEUP, this project implements a communication protocol for the `RS-232` device driver and a file transfer application which acts upon the same device.
 
 # Usage
 
