@@ -27,7 +27,8 @@ static struct {
     unsigned int new_file_name;
 } input_flags = {0, 0, 0, 0};
 
-static unsigned int port = -1;
+static unsigned int file_size = 0;
+static unsigned int port = 0;
 static char file_name[APP_FILENAME_MAX] = {};
 static char new_file_name[APP_FILENAME_MAX] = {};
 static char path[APP_FILENAME_MAX] = {};
@@ -139,6 +140,29 @@ static void print_progress(double cur_size, double total_size, int is_reader) {
 }
 
 int main(int argc, char* argv[]) {
-    
-    return 0;
+
+    int fd;
+    if (mode == 'w') {
+        printf("Establishing a connection...\n");
+
+        if ((fd = llopen(port, FALSE)) == ERROR) {
+            printf("Unable to establish a connection\n");
+            return ERROR;
+        }
+
+        printf("Connection established!\n");
+
+        unsigned char start_packet[MAX_PACKET_SIZE];
+        unsigned int size = build_control_packet(start_packet, START, file_name, file_size);
+
+        if (llwrite(fd, start_packet, size) == ERROR) {
+            printf("Unable to send start control packet\n");
+            return ERROR;
+        }
+    }
+    else if (mode == 'r')
+    {
+    }
+
+    return ERROR;
 }
