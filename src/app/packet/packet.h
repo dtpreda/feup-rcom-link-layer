@@ -17,6 +17,6 @@ unsigned char process_control_packet(unsigned char *packet, unsigned int size, u
 
 unsigned int build_data_packet(unsigned char *packet, unsigned char sequence_number, unsigned char *data, unsigned int data_size);
 
-unsigned char process_data_packet(unsigned char *packet, unsigned char *data, unsigned int *data_size);
+unsigned char process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size);
 
 #endif /* PACKET */
