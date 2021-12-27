@@ -140,6 +140,10 @@ static void print_progress(double cur_size, double total_size, int is_reader) {
 }
 
 int main(int argc, char* argv[]) {
+    if (parse_input(argc, argv) != 0) {
+        printf("Correct usage: ./app -p <port number> -s <file to send> -r <where to store received file> [-n <new file name>]\n");
+        return ERROR;
+    }
 
     int fd;
     if (mode == 'w') {
