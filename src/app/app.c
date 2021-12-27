@@ -296,8 +296,8 @@ int main(int argc, char* argv[]) {
 
         printf("\nSuccesfully sent file\n");
 
-       unsigned char end_packet[MAX_PACKET_SIZE];
-        unsigned int size = build_control_packet(end_packet, END, _file_name, _file_size);
+        unsigned char end_packet[MAX_PACKET_SIZE];
+        size = build_control_packet(end_packet, END, _file_name, _file_size);
 
         if (llwrite(fd, end_packet, size) == ERROR) {
             printf("Unable to send end control packet\n");
