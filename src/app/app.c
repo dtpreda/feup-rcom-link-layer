@@ -143,7 +143,7 @@ static void print_progress(double cur_size, double total_size, int is_reader) {
     fflush(stdout);
 }
 
-int send_file(int fd, unsigned char* filename, unsigned int file_size) {
+static int send_file(int fd, unsigned char* filename, unsigned int file_size) {
     FILE* fp = fopen(filename, "r");
     if (fp == NULL) {
         return -1;
@@ -179,7 +179,7 @@ int send_file(int fd, unsigned char* filename, unsigned int file_size) {
     return SUCCESS;
 }
 
-int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
+static int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
     unsigned char packet[MAX_PACKET_SIZE];
     unsigned int size = 0;
     unsigned char data[MAX_DATA_SIZE];
@@ -207,7 +207,7 @@ int receive_file(int fd, unsigned char* buffer, unsigned int file_size) {
         }
     }
 
-    if (process_control_packet(packet, size, _end_file_name, _end_file_size) != 0) {
+    if (process_control_packet(packet, size, _end_file_name, _end_file_size) != END) {
         return ERROR;
     }
 
