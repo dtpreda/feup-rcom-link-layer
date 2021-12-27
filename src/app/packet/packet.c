@@ -74,7 +74,7 @@ unsigned int build_data_packet(unsigned char *packet, unsigned char sequence_num
 }
 
 unsigned char process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size) {
-    if (packet[0] != DATA) {
+    if (packet[0] != DATA || size - DATA_HEADER_SIZE > MAX_DATA_SIZE) {
         return U_CHAR_ERROR;
     }
 
