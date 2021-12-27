@@ -44,7 +44,7 @@ unsigned char process_control_packet(unsigned char *packet, unsigned int size, u
         return U_CHAR_ERROR;
     }
 
-    memcpy(file_size, packet + 3, (size_t)4);
+    memcpy(&file_size, packet + 3, (size_t)4);
 
     int offset = 3 + sizeof(unsigned int);
 
