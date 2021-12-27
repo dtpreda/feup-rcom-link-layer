@@ -74,5 +74,12 @@ unsigned int build_data_packet(unsigned char *packet, unsigned char sequence_num
 }
 
 unsigned char process_data_packet(unsigned char *packet, unsigned int size, unsigned char *data, unsigned int *data_size) {
-    return 0;
+    if (packet[0] != DATA) {
+        return U_CHAR_ERROR;
+    }
+
+    *data_size = (unsigned int) packet[3] + (unsigned int) (packet[2] * 256);
+    memcpy((void*) data, packet + DATA_HEADER_SIZE, *data_size);
+    
+    return packet[1];
 }
